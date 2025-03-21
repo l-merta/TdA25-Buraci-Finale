@@ -2,7 +2,14 @@
 
 const Features = () => {
   return (
-    <div>Features</div>
+    <>
+    <h1>Features</h1>
+    <div className="features-list">
+        <ul>
+            <li>F-000</li>
+        </ul>
+    </div>
+    </>
   )
 }
 
