@@ -1,1 +1,12 @@
-/*# sourceMappingURL=main.css.map */
+body {
+  padding: 1rem;
+  font-family: poppins;
+}
+
+.features-list {
+  font-weight: bold;
+}
+
+.nadpis {
+  color: #FF7B04;
+}/*# sourceMappingURL=main.css.map */
