@@ -1,25 +1,33 @@
 const express = require("express");
-const cors = require('cors');
+const cors = require("cors");
+const http = require("http");
 
 const app = express();
 const PORT = process.env.PORT || 5200;
 
+// Create HTTP server
+const server = http.createServer(app);
+
+// Import and use WebSocket server
+require("./online")(server);
+
 // Use CORS middleware
 app.use(cors());
 
-// Slouží statické soubory z Reactu
+// Serve static files
 app.use(express.static("public"));
 
-// API route, která vrací JSON objekt
+// API route for testing
 app.get("/api", (req, res) => {
-  res.json({ "api": "Hello World" });
+  res.json({ api: "Chat Application" });
 });
 
-// Obsluhuje všechny ostatní cesty a vrací hlavní HTML soubor
+// Handle all other routes
 app.get("*", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
 
-app.listen(PORT, () => {
+// Start the server
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
