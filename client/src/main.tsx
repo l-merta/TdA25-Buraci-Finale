@@ -6,7 +6,7 @@ import './styles/index.css';
 import './styles/main.css';
 
 import App from './pages/App.tsx';
-import Features from './pages/App.tsx';
+import Features from './pages/Features.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
