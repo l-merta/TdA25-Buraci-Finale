@@ -5,6 +5,11 @@ const http = require("http");
 const app = express();
 const PORT = process.env.PORT || 5200;
 
+// Middleware
+app.use(cors());
+app.use(express.json()); // Parses JSON bodies
+app.use(express.static("public")); // Slouží statické soubory z Reactu
+
 // Create HTTP server
 const server = http.createServer(app);
 
