@@ -16,6 +16,5 @@ createRoot(document.getElementById('root')!).render(
         <Route path='/features' element={<Features />} />
       </Routes>
     </Router>
-    <App />
   </StrictMode>,
 )
