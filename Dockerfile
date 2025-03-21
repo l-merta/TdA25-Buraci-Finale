@@ -23,6 +23,8 @@ RUN mkdir -p server/public && cp -r client/dist/* server/public/
 # Zkopírování celé serverové aplikace
 COPY server ./server
 
+EXPOSE 5200
+
 # Nastavení pracovního adresáře na server a spuštění Express serveru
 WORKDIR /app/server
 CMD ["npm", "run", "start"]
