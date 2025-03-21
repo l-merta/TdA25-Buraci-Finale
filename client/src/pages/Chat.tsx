@@ -1,14 +1,14 @@
 //import { useState } from 'react'
 
-function App() {
+function Chat() {
   const apiUrl = import.meta.env.VITE_API_URL;
   console.log(apiUrl);
 
   return (
     <>
-      React + Express + Docker boilerplate
+      Chat
     </>
   )
 }
 
-export default App
+export default Chat
