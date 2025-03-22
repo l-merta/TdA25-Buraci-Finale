@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 
-import RoomCode from "./../sections/RoomCode";
-import Error from "./Error"; // Import the Error component
+import RoomCode from './../sections/RoomCode';
+import Error from "./Error";
 
 const RoomAdmin = () => {
   const { code } = useParams<{ code?: string }>(); // Get :code from the URL
@@ -51,24 +51,42 @@ const RoomAdmin = () => {
     }
   };
 
+  // Count the number of users with the role "presenter"
+  const presenterCount = users.filter((user) => user.role === "presenter").length;
+
   if (error) {
     // If an error occurred, display the Error component
     return <Error code={error.code} message={error.message} />;
   }
 
   if (!code) {
-    <main>
-      <h1>Zadej kód místnosti jako admin</h1>
-      <RoomCode />
-    </main>
+    return (
+      <main>
+        <h1>Zadej kód hry</h1>
+        <RoomCode />
+      </main>
+    );
   }
 
-  if (!roomStarted) { return (
+  if (roomStarted) {
+    // If the room has started, display a message
+    return (
+      <main>
+        <h1>Admin Room: {code}</h1>
+        <p>The room has started!</p>
+      </main>
+    );
+  }
+
+  return (
     <main>
       <h1>Admin Room: {code}</h1>
-      <button onClick={startRoom} style={{ padding: "10px 20px", marginBottom: "20px" }}>
-        Start Room
-      </button>
+      {/* Only show the Start Room button if there are 2 or more presenters */}
+      {presenterCount >= 2 && (
+        <button onClick={startRoom} style={{ padding: "10px 20px", marginBottom: "20px" }}>
+          Start Room
+        </button>
+      )}
       <div>
         <h2>Users in Room:</h2>
         <ul>
@@ -80,15 +98,7 @@ const RoomAdmin = () => {
         </ul>
       </div>
     </main>
-  );}
-  else {
-    // If the room has started, display a message
-    return (
-      <main>
-        <h1>Místnost započala</h1>
-      </main>
-    );
-  }
+  );
 };
 
 export default RoomAdmin;
