@@ -16,7 +16,6 @@
 body {
   color: var(--f-color-1);
   font-family: var(--f-1);
-  padding: 1rem;
   background-color: var(--bg-color-1);
 }
 
@@ -29,6 +28,26 @@ main .logo-tda {
   width: 15rem;
   margin: 0 auto;
   padding-bottom: 1.5rem;
+}
+main .team-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+}
+main .buraci-logo {
+  width: 7rem;
+  margin: 0 auto;
+}
+main .text-team {
+  font-size: 1.2rem;
+  text-align: center;
+}
+main .contact-info {
+  margin: 1rem 0;
+  text-align: center;
 }
 
 .room-code {
@@ -77,7 +96,8 @@ main .logo-tda {
 }
 
 h1 {
-  color: #FF7B04;
+  color: var(--f-color-1);
+  font-size: 2rem;
 }
 
 .background-effect {
