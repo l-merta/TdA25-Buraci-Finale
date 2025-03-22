@@ -9,6 +9,7 @@ module.exports = (server) => {
   });
 
   const rooms = {}; // Object to store rooms and their users
+  const admins = {}; // Object to track admins connected to rooms
 
   const generateRoomCode = () => {
     let code;
@@ -42,12 +43,13 @@ module.exports = (server) => {
     socket.on("deleteRoom", ({ room }) => {
       if (rooms[room]) {
         delete rooms[room];
+        if (admins[room]) delete admins[room];
         console.log(`Room deleted: ${room}`);
         emitRoomsList(); // Update the list of rooms for all clients
       }
     });
 
-    // Handle joining a room
+    // Handle joining a room as a participant
     socket.on("joinRoom", ({ room }) => {
       if (!rooms[room]) {
         socket.emit("error", { code: 404, message: "Room does not exist" });
@@ -68,6 +70,21 @@ module.exports = (server) => {
       emitRoomsList(); // Update the list of rooms for all clients
     });
 
+    // Handle joining a room as an admin
+    socket.on("joinRoomAsAdmin", ({ room }) => {
+      if (!rooms[room]) {
+        socket.emit("error", { code: 404, message: "Room does not exist" });
+        return;
+      }
+
+      socket.join(room);
+      admins[room] = socket.id; // Track the admin for this room
+      console.log(`Admin connected to room: ${room}`);
+
+      // Immediately send the current user list to the admin
+      socket.emit("roomUsers", { users: Object.values(rooms[room]) });
+    });
+
     // Handle setting or updating a username and role
     socket.on("updateUser", ({ room, username, role }) => {
       if (rooms[room] && rooms[room][socket.id]) {
@@ -76,6 +93,14 @@ module.exports = (server) => {
 
         // Notify all users in the room of the updated user list
         io.to(room).emit("roomUsers", { users: Object.values(rooms[room]) });
+      }
+    });
+
+    // Handle starting the room (admin-only action)
+    socket.on("startRoom", ({ room }) => {
+      if (admins[room] === socket.id) {
+        io.to(room).emit("roomStarted", { message: "The room has been started by the admin." });
+        console.log(`Room ${room} started by admin.`);
       }
     });
 
@@ -89,6 +114,12 @@ module.exports = (server) => {
           io.to(room).emit("roomUsers", { users: Object.values(rooms[room]) });
 
           console.log(`User ${socket.id} disconnected from room ${room}`);
+        }
+
+        // Remove admin if they disconnect
+        if (admins[room] === socket.id) {
+          delete admins[room];
+          console.log(`Admin disconnected from room ${room}`);
         }
       }
       emitRoomsList(); // Update the list of rooms for all clients

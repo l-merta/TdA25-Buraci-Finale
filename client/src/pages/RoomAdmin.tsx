@@ -5,11 +5,9 @@ import { io, Socket } from "socket.io-client";
 import RoomCode from "./../sections/RoomCode";
 import Error from "./Error"; // Import the Error component
 
-const Room = () => {
+const RoomAdmin = () => {
   const { code } = useParams<{ code?: string }>(); // Get :code from the URL
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [username, setUsername] = useState(""); // User's name
-  const [role, setRole] = useState("spectator"); // User's role (default: spectator)
   const [users, setUsers] = useState<{ username: string; role: string }[]>([]); // List of users in the room
   const [error, setError] = useState<{ code: number; message: string } | null>(null); // Error state
 
@@ -22,8 +20,8 @@ const Room = () => {
     const newSocket = io(wsUrl);
     setSocket(newSocket);
 
-    // Join the room
-    newSocket.emit("joinRoom", { room: code });
+    // Join the room as admin
+    newSocket.emit("joinRoomAsAdmin", { room: code });
 
     // Listen for the updated users list
     newSocket.on("roomUsers", (data: { users: { username: string; role: string }[] }) => {
@@ -35,17 +33,20 @@ const Room = () => {
       setError(data); // Set the error state
     });
 
+    // Listen for room start event
+    newSocket.on("roomStarted", (data: { message: string }) => {
+      alert(data.message); // Notify the admin that the room has started
+    });
+
     // Cleanup on component unmount
     return () => {
       newSocket.disconnect();
     };
   }, [code]);
 
-  const updateUser = (newRole: string) => {
+  const startRoom = () => {
     if (socket) {
-      setRole(newRole); // Update role locally
-      // Send the updated username and role to the server
-      socket.emit("updateUser", { room: code, username, role: newRole });
+      socket.emit("startRoom", { room: code });
     }
   };
 
@@ -66,23 +67,11 @@ const Room = () => {
 
   return (
     <main>
-      <h1>Room: {code}</h1>
+      <h1>Admin Room: {code}</h1>
+      <button onClick={startRoom} style={{ padding: "10px 20px", marginBottom: "20px" }}>
+        Start Room
+      </button>
       <div>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter your name"
-          style={{ marginRight: "10px", padding: "5px" }}
-        />
-        <button onClick={() => updateUser("spectator")} style={{ marginRight: "10px", padding: "5px 10px" }}>
-          Spectator
-        </button>
-        <button onClick={() => updateUser("presenter")} style={{ padding: "5px 10px" }}>
-          Presenter
-        </button>
-      </div>
-      <div style={{ marginTop: "20px" }}>
         <h2>Users in Room:</h2>
         <ul>
           {users.map((user, index) => (
@@ -96,4 +85,4 @@ const Room = () => {
   );
 };
 
-export default Room;
+export default RoomAdmin;
