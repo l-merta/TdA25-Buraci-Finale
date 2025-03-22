@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 
-import RoomCode from './../sections/RoomCode';
-import Error from "./Error";
+import Error from "./Error"; // Import the Error component
 
 const RoomAdmin = () => {
   const { code } = useParams<{ code?: string }>(); // Get :code from the URL
   const [socket, setSocket] = useState<Socket | null>(null);
   const [users, setUsers] = useState<{ username: string; role: string }[]>([]); // List of users in the room
   const [roomStarted, setRoomStarted] = useState(false); // Room started status
+  const [currentPresenter, setCurrentPresenter] = useState<{ username: string } | null>(null); // Current presenter
+  const [presenterReady, setPresenterReady] = useState(false); // Ready status of the current presenter
   const [error, setError] = useState<{ code: number; message: string } | null>(null); // Error state
 
   useEffect(() => {
@@ -34,6 +35,12 @@ const RoomAdmin = () => {
       setRoomStarted(data.roomStarted);
     });
 
+    // Listen for the current presenter and their ready status
+    newSocket.on("currentPresenter", (data: { presenter: { username: string }; presenterReady: boolean }) => {
+      setCurrentPresenter(data.presenter);
+      setPresenterReady(data.presenterReady);
+    });
+
     // Listen for errors
     newSocket.on("error", (data: { code: number; message: string }) => {
       setError(data); // Set the error state
@@ -51,8 +58,13 @@ const RoomAdmin = () => {
     }
   };
 
-  // Count the number of users with the role "presenter"
-  const presenterCount = users.filter((user) => user.role === "presenter").length;
+  const nextPresenter = () => {
+    if (socket) {
+      socket.emit("nextPresenter", { room: code });
+    }
+  };
+
+  const presenterCounter = users.filter((user) => user.role === "presenter").length;
 
   if (error) {
     // If an error occurred, display the Error component
@@ -60,20 +72,25 @@ const RoomAdmin = () => {
   }
 
   if (!code) {
-    return (
-      <main>
-        <h1>Zadej kód hry</h1>
-        <RoomCode />
-      </main>
-    );
+    return null; // No room code provided
   }
 
   if (roomStarted) {
-    // If the room has started, display a message
+    // If the room has started, display the current presenter and their ready status
     return (
       <main>
         <h1>Admin Room: {code}</h1>
-        <p>The room has started!</p>
+        {currentPresenter ? (
+          <div>
+            <p>Currently presenting: {currentPresenter.username}</p>
+            <p>Ready status: {presenterReady ? "Ready" : "Not Ready"}</p>
+            <button onClick={nextPresenter} style={{ padding: "10px 20px" }}>
+              Next Presenter
+            </button>
+          </div>
+        ) : (
+          <p>All presenters have finished.</p>
+        )}
       </main>
     );
   }
@@ -81,12 +98,11 @@ const RoomAdmin = () => {
   return (
     <main>
       <h1>Admin Room: {code}</h1>
-      {/* Only show the Start Room button if there are 2 or more presenters */}
-      {presenterCount >= 2 && (
+      {presenterCounter >= 2 && 
         <button onClick={startRoom} style={{ padding: "10px 20px", marginBottom: "20px" }}>
           Start Room
         </button>
-      )}
+      }
       <div>
         <h2>Users in Room:</h2>
         <ul>

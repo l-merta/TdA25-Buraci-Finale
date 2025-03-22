@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 
 const AdminPanel = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [rooms, setRooms] = useState<{ code: string; userCount: number }[]>([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const wsUrl = import.meta.env.VITE_WS_URL || `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
@@ -37,10 +36,6 @@ const AdminPanel = () => {
     }
   };
 
-  const goToRoom = (roomCode: string) => {
-    navigate(`/mistnost/${roomCode}`);
-  };
-
   return (
     <main>
       <h1>Admin Panel</h1>
@@ -61,12 +56,7 @@ const AdminPanel = () => {
               <span>
                 <strong>Room Code:</strong> {room.code} | <strong>Users:</strong> {room.userCount}
               </span>
-              <button
-                onClick={() => goToRoom(room.code)}
-                style={{ marginLeft: "10px", padding: "5px 10px" }}
-              >
-                Go to Room
-              </button>
+              <Link to={'/admin/mistnost/' + room.code}>Go to Room</Link>
               <button
                 onClick={() => deleteRoom(room.code)}
                 style={{ marginLeft: "10px", padding: "5px 10px", backgroundColor: "red", color: "white" }}

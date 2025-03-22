@@ -5,7 +5,7 @@ const Footer = () => {
     return (
       <>
       <footer>
-        <Link to='team'>O týmu</Link>
+        <Link to='Team'>O týmu</Link>
       </footer>
       </>
     )

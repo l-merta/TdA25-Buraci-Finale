@@ -19,6 +19,14 @@ module.exports = (server) => {
     return code;
   };
 
+  const generateUserId = () => {
+    let id;
+    do {
+      id = Math.floor(1000000000 + Math.random() * 9000000000).toString(); // Generate a 10-digit code
+    } while (Object.values(rooms).some((room) => Object.values(room.users).some((user) => user.id === id))); // Ensure the id is unique
+    return id;
+  };
+
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
@@ -38,6 +46,9 @@ module.exports = (server) => {
       rooms[room] = {
         users: {}, // Users in the room
         roomStarted: false, // Room status
+        presenters: [], // List of presenters
+        currentPresenterIndex: -1, // Index of the current presenter
+        presenterReady: false, // Ready status of the current presenter
       };
       console.log(`Room created: ${room}`);
       emitRoomsList(); // Update the list of rooms for all clients
@@ -64,10 +75,14 @@ module.exports = (server) => {
 
       if (!rooms[room].users[socket.id]) {
         rooms[room].users[socket.id] = {
-          username: "Zaměstnanec",//`User${Math.floor(1000 + Math.random() * 9000)}`,
+          id: generateUserId(), // Generate a unique 10-digit id
+          username: "Zaměstnanec",
           role: "spectator", // Default role
         };
       }
+
+      // Send the user's id back to the client
+      socket.emit("userId", { id: rooms[room].users[socket.id].id });
 
       // Notify all users in the room of the updated user list
       io.to(room).emit("roomUsers", { users: Object.values(rooms[room].users) });
@@ -107,9 +122,60 @@ module.exports = (server) => {
     // Handle starting the room (admin-only action)
     socket.on("startRoom", ({ room }) => {
       if (admins[room] === socket.id) {
-        rooms[room].roomStarted = true; // Update the room status
-        io.to(room).emit("roomStatus", { roomStarted: true }); // Notify all users
+        const roomData = rooms[room];
+        roomData.roomStarted = true; // Update the room status
+
+        // Create a shuffled list of presenters
+        roomData.presenters = Object.values(roomData.users)
+          .filter((user) => user.role === "presenter")
+          .sort(() => Math.random() - 0.5);
+
+        roomData.currentPresenterIndex = 0; // Start with the first presenter
+        roomData.presenterReady = false; // Reset presenter ready status
+
+        // Notify all users of the room status and the first presenter
+        io.to(room).emit("roomStatus", { roomStarted: true });
+        io.to(room).emit("currentPresenter", {
+          presenter: roomData.presenters[0],
+          presenterReady: roomData.presenterReady,
+        });
+
         console.log(`Room ${room} started by admin.`);
+      }
+    });
+
+    // Handle presenter ready event
+    socket.on("presenterReady", ({ room }) => {
+      const roomData = rooms[room];
+      if (roomData) {
+        roomData.presenterReady = true; // Mark the current presenter as ready
+
+        // Notify all users of the presenter's ready status
+        io.to(room).emit("currentPresenter", {
+          presenter: roomData.presenters[roomData.currentPresenterIndex],
+          presenterReady: roomData.presenterReady,
+        });
+      }
+    });
+
+    // Handle moving to the next presenter (admin-only action)
+    socket.on("nextPresenter", ({ room }) => {
+      const roomData = rooms[room];
+      if (roomData && admins[room] === socket.id) {
+        roomData.presenterReady = false; // Reset ready status
+        roomData.currentPresenterIndex += 1; // Move to the next presenter
+
+        if (roomData.currentPresenterIndex < roomData.presenters.length) {
+          // Notify all users of the next presenter
+          io.to(room).emit("currentPresenter", {
+            presenter: roomData.presenters[roomData.currentPresenterIndex],
+            presenterReady: roomData.presenterReady,
+          });
+        } else {
+          // All presenters have presented
+          io.to(room).emit("allPresentersDone", { message: "All presenters have finished." });
+          console.log(`All presenters in room ${room} have finished.`);
+        }
       }
     });
 
