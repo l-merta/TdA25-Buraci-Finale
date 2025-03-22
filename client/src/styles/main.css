@@ -7,19 +7,13 @@
   --bg-color-5: #1A1A1A;
   --bg-color-6: #080808;
   --bg-color-7: #AB2E58;
-  --bg-color-8: #724479
-
-  --f-color-1: #0070BB;
-  --f-color-2: #395A9A;
-  --f-color-3: #F6F6F6;
-  --f-color-4: #E31837;
-  --f-color-5: #1A1A1A;
-  --f-color-6: #080808;
-  --f-color-7: #AB2E58;
-  --f-color-8: #724479 ;
+  --bg-color-8: #724479;
+  --f-color-1: whitesmoke;
+  --f-color-2: black;
 }
 
 body {
+  color: var(--f-color-1);
   font-family: var(--f-1);
   padding: 1rem;
   background-color: var(--bg-color-1);
@@ -46,11 +40,9 @@ main .logo-tda {
   gap: 0.5rem;
 }
 .room-code h3 {
-  color: white;
   margin: 0 auto;
 }
 .room-code input {
-  color: white;
   font: 600 1.4rem var(--f-1);
   background-color: var(--bg-color-1);
   width: 100%;
@@ -72,7 +64,7 @@ main .logo-tda {
 .room-code a {
   background-color: #F6F6F6;
   color: #0070BB;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   text-decoration: none;
   border-radius: 2rem;
   padding: 0.6rem 1.2rem;
