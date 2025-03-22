@@ -57,7 +57,10 @@ module.exports = (server) => {
       socket.join(room);
 
       if (!rooms[room][socket.id]) {
-        rooms[room][socket.id] = { username: `User${Math.floor(1000 + Math.random() * 9000)}` };
+        rooms[room][socket.id] = {
+          username: `User${Math.floor(1000 + Math.random() * 9000)}`,
+          role: "spectator", // Default role
+        };
       }
 
       // Notify all users in the room of the updated user list
@@ -65,10 +68,11 @@ module.exports = (server) => {
       emitRoomsList(); // Update the list of rooms for all clients
     });
 
-    // Handle setting or updating a username
-    socket.on("username", ({ room, username }) => {
+    // Handle setting or updating a username and role
+    socket.on("updateUser", ({ room, username, role }) => {
       if (rooms[room] && rooms[room][socket.id]) {
-        rooms[room][socket.id].username = username;
+        if (username) rooms[room][socket.id].username = username;
+        if (role) rooms[room][socket.id].role = role;
 
         // Notify all users in the room of the updated user list
         io.to(room).emit("roomUsers", { users: Object.values(rooms[room]) });

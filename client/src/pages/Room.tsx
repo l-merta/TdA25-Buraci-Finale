@@ -9,7 +9,8 @@ const Room = () => {
   const { code } = useParams<{ code?: string }>(); // Get :code from the URL
   const [socket, setSocket] = useState<Socket | null>(null);
   const [username, setUsername] = useState(""); // User's name
-  const [users, setUsers] = useState<{ username: string }[]>([]); // List of users in the room
+  const [role, setRole] = useState("spectator"); // User's role (default: spectator)
+  const [users, setUsers] = useState<{ username: string; role: string }[]>([]); // List of users in the room
   const [error, setError] = useState<{ code: number; message: string } | null>(null); // Error state
 
   useEffect(() => {
@@ -25,7 +26,7 @@ const Room = () => {
     newSocket.emit("joinRoom", { room: code });
 
     // Listen for the updated users list
-    newSocket.on("roomUsers", (data: { users: { username: string }[] }) => {
+    newSocket.on("roomUsers", (data: { users: { username: string; role: string }[] }) => {
       setUsers(data.users);
     });
 
@@ -40,10 +41,10 @@ const Room = () => {
     };
   }, [code]);
 
-  const emitUsername = () => {
-    if (socket && username.trim()) {
-      // Send the username to the server
-      socket.emit("username", { room: code, username });
+  const updateUser = () => {
+    if (socket) {
+      // Send the updated username and role to the server
+      socket.emit("updateUser", { room: code, username, role });
     }
   };
 
@@ -73,15 +74,25 @@ const Room = () => {
           placeholder="Enter your name"
           style={{ marginRight: "10px", padding: "5px" }}
         />
-        <button onClick={emitUsername} style={{ padding: "5px 10px" }}>
-          Set Username
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          style={{ marginRight: "10px", padding: "5px" }}
+        >
+          <option value="spectator">Spectator</option>
+          <option value="presenter">Presenter</option>
+        </select>
+        <button onClick={updateUser} style={{ padding: "5px 10px" }}>
+          Update
         </button>
       </div>
       <div style={{ marginTop: "20px" }}>
         <h2>Users in Room:</h2>
         <ul>
           {users.map((user, index) => (
-            <li key={index}>{user.username}</li>
+            <li key={index}>
+              {user.username} - {user.role}
+            </li>
           ))}
         </ul>
       </div>

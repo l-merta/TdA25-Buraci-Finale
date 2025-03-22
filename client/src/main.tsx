@@ -19,7 +19,9 @@ createRoot(document.getElementById('root')!).render(
         <Route path='/' element={<Home />} />
         <Route path='/mistnost' element={<Room />} />
         <Route path='/mistnost/:code' element={<Room />} />
-        <Route path='/admin-panel' element={<AdminPanel />} />
+        <Route path='/admin' element={<AdminPanel />} />
+        <Route path='/admin/mistnost' element={<Room />} />
+        <Route path='/admin/mistnost/:code' element={<Room />} />
         <Route path='/features' element={<Features />} />
         <Route path='/error' element={<Error code={404} message='Tato stránka neexistuje' />} />
         <Route path='/*' element={<Error code={404} message='Tato stránka neexistuje' />} />
