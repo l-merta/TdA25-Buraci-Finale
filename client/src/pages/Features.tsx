@@ -3,7 +3,7 @@
 const Features = () => {
   return (
     <>
-    <h1>Features</h1>
+    <h1 className="nadpis">Features</h1>
     <div className="features-list">
         <ul>
             <li>F-000</li>
