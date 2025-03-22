@@ -10,22 +10,59 @@ module.exports = (server) => {
 
   const rooms = {}; // Object to store rooms and their users
 
+  const generateRoomCode = () => {
+    let code;
+    do {
+      code = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit code
+    } while (rooms[code]); // Ensure the code is unique
+    return code;
+  };
+
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
+    // Send the list of rooms to the admin panel
+    const emitRoomsList = () => {
+      const roomList = Object.keys(rooms).map((room) => ({
+        code: room,
+        userCount: Object.keys(rooms[room]).length,
+      }));
+      io.emit("roomsList", roomList);
+    };
+
+    // Handle creating a new room
+    socket.on("createRoom", () => {
+      const room = generateRoomCode(); // Generate a unique room code
+      rooms[room] = {};
+      console.log(`Room created: ${room}`);
+      emitRoomsList(); // Update the list of rooms for all clients
+    });
+
+    // Handle deleting a room
+    socket.on("deleteRoom", ({ room }) => {
+      if (rooms[room]) {
+        delete rooms[room];
+        console.log(`Room deleted: ${room}`);
+        emitRoomsList(); // Update the list of rooms for all clients
+      }
+    });
+
     // Handle joining a room
     socket.on("joinRoom", ({ room }) => {
-      socket.join(room);
-
       if (!rooms[room]) {
-        rooms[room] = {};
+        socket.emit("error", { message: "Room does not exist" });
+        return;
       }
 
-      // Add the user to the room with a default username
-      rooms[room][socket.id] = { username: `User${Math.floor(1000 + Math.random() * 9000)}` };
+      socket.join(room);
+
+      if (!rooms[room][socket.id]) {
+        rooms[room][socket.id] = { username: `User${Math.floor(1000 + Math.random() * 9000)}` };
+      }
 
       // Notify all users in the room of the updated user list
       io.to(room).emit("roomUsers", { users: Object.values(rooms[room]) });
+      emitRoomsList(); // Update the list of rooms for all clients
     });
 
     // Handle setting or updating a username
@@ -47,9 +84,15 @@ module.exports = (server) => {
           // Notify the room of the updated user list
           io.to(room).emit("roomUsers", { users: Object.values(rooms[room]) });
 
+          // If the room is empty, delete it
+          if (Object.keys(rooms[room]).length === 0) {
+            delete rooms[room];
+          }
+
           console.log(`User ${socket.id} disconnected from room ${room}`);
         }
       }
+      emitRoomsList(); // Update the list of rooms for all clients
     });
   });
 };
