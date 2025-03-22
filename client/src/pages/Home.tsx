@@ -1,13 +1,17 @@
 //import { useState } from "react";
 
+import BackgroundEffect from './../components/BackgroundEffect';
 import RoomCode from './../sections/RoomCode';
 
 const Home = () => {
   return (
+    <>
     <main>
-      <h1>Home stránka</h1>
+      <BackgroundEffect />
+      <img src="/images/TdA-logo-bile-full.png" className='logo-tda'/>
       <RoomCode />
     </main>
+    </>
   );
 };
 
