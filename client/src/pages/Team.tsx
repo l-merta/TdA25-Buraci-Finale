@@ -14,10 +14,10 @@ const Team: React.FC = () => {
                     Jsme Buráci! Jsme tým složený z 3 členů, kteří se rozhodli vytvořit tuto webovou aplikaci. 2 Programátoři a jeden grafik se rozhodli založit tento oříškový tým tento rok za vidinou zlepšení svojich skills a získání nových zkušeností.
                 </div>
                 <div className='contact-info'>
-                    <span>Kontaktní údaje:</span>
-                    <span>Buráci s.r.o.</span>
-                    <span>Jablunkovská 295</span>
-                    <span>739 61 Třinec</span>
+                    <div>Kontaktní údaje:</div>
+                    <div>Buráci s.r.o.</div>
+                    <div>Jablunkovská 295</div>
+                    <div>739 61 Třinec</div>
                 </div>
             <img src="images/buraci-logo2.png" className='buraci-logo'/>
             </section>
