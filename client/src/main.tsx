@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Home from './pages/Home.tsx';
 //import Chat from './pages/Chat.tsx';
+import Room from './pages/Room.tsx';
 import Features from './pages/Features.tsx';
 
 import './styles/index.css';
@@ -14,6 +15,7 @@ createRoot(document.getElementById('root')!).render(
     <Router>
       <Routes>
         <Route path='/' element={<Home />} />
+        <Route path='/mistnost/:code' element={<Room />} />
         <Route path='/features' element={<Features />} />
       </Routes>
     </Router>
