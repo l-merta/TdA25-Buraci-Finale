@@ -21,8 +21,8 @@ createRoot(document.getElementById('root')!).render(
         <Route path='/mistnost/:code' element={<Room />} />
         <Route path='/admin-panel' element={<AdminPanel />} />
         <Route path='/features' element={<Features />} />
-        <Route path='/error' element={<Error />} />
-        <Route path='/*' element={<Error />} />
+        <Route path='/error' element={<Error code={404} message='Tato stránka neexistuje' />} />
+        <Route path='/*' element={<Error code={404} message='Tato stránka neexistuje' />} />
       </Routes>
     </Router>
   </StrictMode>,
