@@ -11,47 +11,45 @@ module.exports = (server) => {
   const rooms = {}; // Object to store rooms and their users
 
   io.on("connection", (socket) => {
-    console.log("A user connected");
+    console.log("A user connected:", socket.id);
 
     // Handle joining a room
     socket.on("joinRoom", ({ room }) => {
       socket.join(room);
 
       if (!rooms[room]) {
-        rooms[room] = [];
+        rooms[room] = {};
       }
 
-      // Notify the user of the current room users
-      io.to(room).emit("roomUsers", { users: rooms[room] });
-    });
-
-    // Handle setting a username
-    socket.on("setUsername", ({ room, username }) => {
-      if (rooms[room] && !rooms[room].includes(username)) {
-        rooms[room].push(username);
-      }
+      // Add the user to the room with a default username
+      rooms[room][socket.id] = { username: `User${Math.floor(1000 + Math.random() * 9000)}` };
 
       // Notify all users in the room of the updated user list
-      io.to(room).emit("roomUsers", { users: rooms[room] });
+      io.to(room).emit("roomUsers", { users: Object.values(rooms[room]) });
     });
 
-    // Listen for chat messages
-    socket.on("chatMessage", (data) => {
-      console.log(`Message received: ${data.message}`);
-      // Broadcast the message to all connected clients
-      io.emit("chatMessage", { username: data.username, message: data.message });
+    // Handle setting or updating a username
+    socket.on("username", ({ room, username }) => {
+      if (rooms[room] && rooms[room][socket.id]) {
+        rooms[room][socket.id].username = username;
+
+        // Notify all users in the room of the updated user list
+        io.to(room).emit("roomUsers", { users: Object.values(rooms[room]) });
+      }
     });
 
     // Handle user disconnection
     socket.on("disconnect", () => {
       for (const room in rooms) {
-        rooms[room] = rooms[room].filter((user) => user !== socket.username);
+        if (rooms[room][socket.id]) {
+          delete rooms[room][socket.id]; // Remove the user from the room
 
-        // Notify the room of the updated user list
-        io.to(room).emit("roomUsers", { users: rooms[room] });
+          // Notify the room of the updated user list
+          io.to(room).emit("roomUsers", { users: Object.values(rooms[room]) });
+
+          console.log(`User ${socket.id} disconnected from room ${room}`);
+        }
       }
-
-      console.log("A user disconnected");
     });
   });
 };

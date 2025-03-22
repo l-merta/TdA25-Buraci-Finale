@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
+
 import RoomCode from "./../sections/RoomCode";
 
 const Room = () => {
   const { code } = useParams<{ code?: string }>(); // Get :code from the URL
   const [socket, setSocket] = useState<Socket | null>(null);
   const [username, setUsername] = useState(""); // User's name
-  const [users, setUsers] = useState<string[]>([]); // List of users in the room
+  const [users, setUsers] = useState<{ username: string }[]>([]); // List of users in the room
 
   useEffect(() => {
     if (!code) return; // If no room code, do nothing
@@ -22,7 +23,7 @@ const Room = () => {
     newSocket.emit("joinRoom", { room: code });
 
     // Listen for the updated users list
-    newSocket.on("roomUsers", (data: { users: string[] }) => {
+    newSocket.on("roomUsers", (data: { users: { username: string }[] }) => {
       setUsers(data.users);
     });
 
@@ -32,10 +33,10 @@ const Room = () => {
     };
   }, [code]);
 
-  const handleSetUsername = () => {
+  const emitUsername = () => {
     if (socket && username.trim()) {
       // Send the username to the server
-      socket.emit("setUsername", { room: code, username });
+      socket.emit("username", { room: code, username });
     }
   };
 
@@ -60,15 +61,15 @@ const Room = () => {
           placeholder="Enter your name"
           style={{ marginRight: "10px", padding: "5px" }}
         />
-        <button onClick={handleSetUsername} style={{ padding: "5px 10px" }}>
-          Join Room
+        <button onClick={emitUsername} style={{ padding: "5px 10px" }}>
+          Set Username
         </button>
       </div>
       <div style={{ marginTop: "20px" }}>
         <h2>Users in Room:</h2>
         <ul>
           {users.map((user, index) => (
-            <li key={index}>{user}</li>
+            <li key={index}>{user.username}</li>
           ))}
         </ul>
       </div>
