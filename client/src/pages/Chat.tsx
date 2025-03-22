@@ -9,7 +9,7 @@ function Chat() {
   const [username, setUsername] = useState(() => `User${Math.floor(1000 + Math.random() * 9000)}`);
 
   useEffect(() => {
-    const wsUrl = import.meta.env.VITE_WS_URL || `http://${window.location.hostname}:5200`;
+    const wsUrl = import.meta.env.VITE_WS_URL || `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
 
     // Establish socket connection
     const newSocket = io(wsUrl);
