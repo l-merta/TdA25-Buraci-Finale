@@ -64,7 +64,7 @@ module.exports = (server) => {
 
       if (!rooms[room].users[socket.id]) {
         rooms[room].users[socket.id] = {
-          username: `User${Math.floor(1000 + Math.random() * 9000)}`,
+          username: "Zaměstnanec",//`User${Math.floor(1000 + Math.random() * 9000)}`,
           role: "spectator", // Default role
         };
       }

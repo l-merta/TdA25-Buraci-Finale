@@ -48,11 +48,10 @@ const Room = () => {
     };
   }, [code]);
 
-  const updateUser = (newRole: string) => {
+  const updateUser = () => {
     if (socket) {
-      setRole(newRole); // Update role locally
       // Send the updated username and role to the server
-      socket.emit("updateUser", { room: code, username, role: newRole });
+      socket.emit("updateUser", { room: code, username, role: role });
     }
   };
 
@@ -92,11 +91,14 @@ const Room = () => {
           placeholder="Enter your name"
           style={{ marginRight: "10px", padding: "5px" }}
         />
-        <button onClick={() => updateUser("spectator")} style={{ marginRight: "10px", padding: "5px 10px" }}>
+        <button onClick={() => setRole("spectator")} style={{ marginRight: "10px", padding: "5px 10px" }}>
           Spectator
         </button>
-        <button onClick={() => updateUser("presenter")} style={{ padding: "5px 10px" }}>
+        <button onClick={() => setRole("presenter")} style={{ padding: "5px 10px" }}>
           Presenter
+        </button>
+        <button onClick={() => updateUser()} style={{ padding: "5px 10px" }}>
+          Pokračovat
         </button>
       </div>
       <div style={{ marginTop: "20px" }}>
