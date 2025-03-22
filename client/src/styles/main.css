@@ -10,6 +10,7 @@
   --bg-color-8: #724479;
   --f-color-1: whitesmoke;
   --f-color-2: black;
+  --footer-height: 4rem;
 }
 
 body {
@@ -111,6 +112,21 @@ h1 {
   width: 100vw;
   opacity: 0.2;
   animation: move 10s infinite alternate;
+}
+
+footer {
+  height: var(--footer-height);
+  margin-top: 2rem;
+  position: fixed;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+  text-align: center;
+}
+footer a {
+  color: var(--f-color-1);
+  text-decoration: none;
 }
 
 @keyframes move {
