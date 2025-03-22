@@ -9,6 +9,7 @@ const RoomAdmin = () => {
   const { code } = useParams<{ code?: string }>(); // Get :code from the URL
   const [socket, setSocket] = useState<Socket | null>(null);
   const [users, setUsers] = useState<{ username: string; role: string }[]>([]); // List of users in the room
+  const [roomStarted, setRoomStarted] = useState(false); // Room started status
   const [error, setError] = useState<{ code: number; message: string } | null>(null); // Error state
 
   useEffect(() => {
@@ -28,14 +29,14 @@ const RoomAdmin = () => {
       setUsers(data.users);
     });
 
+    // Listen for room status updates
+    newSocket.on("roomStatus", (data: { roomStarted: boolean }) => {
+      setRoomStarted(data.roomStarted);
+    });
+
     // Listen for errors
     newSocket.on("error", (data: { code: number; message: string }) => {
       setError(data); // Set the error state
-    });
-
-    // Listen for room start event
-    newSocket.on("roomStarted", (data: { message: string }) => {
-      alert(data.message); // Notify the admin that the room has started
     });
 
     // Cleanup on component unmount
@@ -56,16 +57,13 @@ const RoomAdmin = () => {
   }
 
   if (!code) {
-    // If no code is present, display the RoomCode component
-    return (
-      <main>
-        <h1>Zadej kód místnosti</h1>
-        <RoomCode />
-      </main>
-    );
+    <main>
+      <h1>Zadej kód místnosti jako admin</h1>
+      <RoomCode />
+    </main>
   }
 
-  return (
+  if (!roomStarted) { return (
     <main>
       <h1>Admin Room: {code}</h1>
       <button onClick={startRoom} style={{ padding: "10px 20px", marginBottom: "20px" }}>
@@ -82,7 +80,15 @@ const RoomAdmin = () => {
         </ul>
       </div>
     </main>
-  );
+  );}
+  else {
+    // If the room has started, display a message
+    return (
+      <main>
+        <h1>Místnost započala</h1>
+      </main>
+    );
+  }
 };
 
 export default RoomAdmin;

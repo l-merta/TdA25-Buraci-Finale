@@ -9,8 +9,10 @@ const Room = () => {
   const { code } = useParams<{ code?: string }>(); // Get :code from the URL
   const [socket, setSocket] = useState<Socket | null>(null);
   const [username, setUsername] = useState(""); // User's name
+  //@ts-ignore
   const [role, setRole] = useState("spectator"); // User's role (default: spectator)
   const [users, setUsers] = useState<{ username: string; role: string }[]>([]); // List of users in the room
+  const [roomStarted, setRoomStarted] = useState(false); // Room started status
   const [error, setError] = useState<{ code: number; message: string } | null>(null); // Error state
 
   useEffect(() => {
@@ -28,6 +30,11 @@ const Room = () => {
     // Listen for the updated users list
     newSocket.on("roomUsers", (data: { users: { username: string; role: string }[] }) => {
       setUsers(data.users);
+    });
+
+    // Listen for room status updates
+    newSocket.on("roomStatus", (data: { roomStarted: boolean }) => {
+      setRoomStarted(data.roomStarted);
     });
 
     // Listen for errors
@@ -60,6 +67,16 @@ const Room = () => {
       <main>
         <h1>Zadej kód místnosti</h1>
         <RoomCode />
+      </main>
+    );
+  }
+
+  if (roomStarted) {
+    // If the room has started, display a message
+    return (
+      <main>
+        <h1>Room: {code}</h1>
+        <p>The room has started!</p>
       </main>
     );
   }
