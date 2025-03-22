@@ -52,8 +52,6 @@ const Room = () => {
   return (
     <main>
       <h1>Room: {code}</h1>
-
-      {/* Username Input */}
       <div>
         <input
           type="text"
@@ -66,8 +64,6 @@ const Room = () => {
           Join Room
         </button>
       </div>
-
-      {/* Users List */}
       <div style={{ marginTop: "20px" }}>
         <h2>Users in Room:</h2>
         <ul>
