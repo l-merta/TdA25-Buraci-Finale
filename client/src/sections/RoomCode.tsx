@@ -5,15 +5,15 @@ const RoomCode = () => {
   const [roomCode, setRoomCode] = useState("");
 
   return (
-    <div style={{ marginTop: "20px" }}>
+    <div className='room-code'>
+      <h3>Přidej se do místnosti</h3>
       <input
         type="text"
         value={roomCode}
         onChange={(e) => setRoomCode(e.target.value)}
-        placeholder="Enter room code"
-        style={{ marginRight: "10px", padding: "5px" }}
+        placeholder="6 místní kód"
       />
-      <Link to={`/mistnost/${roomCode}`}style={{ padding: "5px 10px" }}>Go to Room</Link>
+      <Link to={`/mistnost/${roomCode}`}>Připojit se</Link>
     </div>
   )
 }
