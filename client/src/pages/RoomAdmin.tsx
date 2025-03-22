@@ -2,19 +2,16 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 
-import RoomCode from "./../sections/RoomCode";
 import Error from "./Error"; // Import the Error component
 
-const Room = () => {
+const RoomAdmin = () => {
   const { code } = useParams<{ code?: string }>(); // Get :code from the URL
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [username, setUsername] = useState(""); // User's name
-  const [role, setRole] = useState("spectator"); // User's role (default: spectator)
-  const [id, setId] = useState<string | null>(null); // User's unique id
-  const [users, setUsers] = useState<{ id: string; username: string; role: string }[]>([]); // List of users in the room
+  const [users, setUsers] = useState<{ username: string; role: string }[]>([]); // List of users in the room
   const [roomStarted, setRoomStarted] = useState(false); // Room started status
-  const [currentPresenter, setCurrentPresenter] = useState<{ id: string; username: string } | null>(null); // Current presenter
+  const [currentPresenter, setCurrentPresenter] = useState<{ username: string } | null>(null); // Current presenter
   const [presenterReady, setPresenterReady] = useState(false); // Ready status of the current presenter
+  const [lastPresenter, setLastPresenter] = useState(false); // All presenters are done
   const [presentersDone, setPresentersDone] = useState(false); // All presenters are done
   const [error, setError] = useState<{ code: number; message: string } | null>(null); // Error state
 
@@ -27,16 +24,11 @@ const Room = () => {
     const newSocket = io(wsUrl);
     setSocket(newSocket);
 
-    // Join the room
-    newSocket.emit("joinRoom", { room: code });
-
-    // Listen for the user's id
-    newSocket.on("userId", (data: { id: string }) => {
-      setId(data.id);
-    });
+    // Join the room as admin
+    newSocket.emit("joinRoomAsAdmin", { room: code });
 
     // Listen for the updated users list
-    newSocket.on("roomUsers", (data: { users: { id: string; username: string; role: string }[] }) => {
+    newSocket.on("roomUsers", (data: { users: { username: string; role: string }[] }) => {
       setUsers(data.users);
     });
 
@@ -46,9 +38,13 @@ const Room = () => {
     });
 
     // Listen for the current presenter and their ready status
-    newSocket.on("currentPresenter", (data: { presenter: { id: string; username: string }; presenterReady: boolean }) => {
+    newSocket.on("currentPresenter", (data: { presenter: { username: string }; presenterReady: boolean }) => {
       setCurrentPresenter(data.presenter);
       setPresenterReady(data.presenterReady);
+    });
+
+    newSocket.on("lastPresenter", () => {
+      setLastPresenter(true);
     });
 
     newSocket.on("allPresentersDone", () => {
@@ -66,11 +62,19 @@ const Room = () => {
     };
   }, [code]);
 
-  const markReady = () => {
+  const startRoom = () => {
     if (socket) {
-      socket.emit("presenterReady", { room: code });
+      socket.emit("startRoom", { room: code });
     }
   };
+
+  const nextPresenter = () => {
+    if (socket) {
+      socket.emit("nextPresenter", { room: code });
+    }
+  };
+
+  const presenterCounter = users.filter((user) => user.role === "presenter").length;
 
   if (error) {
     // If an error occurred, display the Error component
@@ -78,40 +82,33 @@ const Room = () => {
   }
 
   if (!code) {
-    // If no code is present, display the RoomCode component
-    return (
-      <main>
-        <h1>Zadej kód místnosti</h1>
-        <RoomCode />
-      </main>
-    );
+    return null; // No room code provided
   }
 
   if (presentersDone) {
     return (
       <main>
-        <h1>Prezentace ukončeny</h1>
+        <h1>Admin Room: {code}</h1>
+        <p>All presenters have finished.</p>
       </main>
-    );
+    )
   }
 
   if (roomStarted) {
     // If the room has started, display the current presenter and their ready status
     return (
       <main>
-        <h1>Room: {code}</h1>
+        <h1>Admin Room: {code}</h1>
         {currentPresenter ? (
           <div>
             <p>Currently presenting: {currentPresenter.username}</p>
             <p>Ready status: {presenterReady ? "Ready" : "Not Ready"}</p>
-            {role === "presenter" && currentPresenter.id === id && !presenterReady && (
-              <button onClick={markReady} style={{ padding: "10px 20px" }}>
-                Mark as Ready
-              </button>
-            )}
+            <button onClick={nextPresenter} style={{ padding: "10px 20px" }}>
+              {lastPresenter ? 'Ukázat výsledky' : 'Next Presenter'}
+            </button>
           </div>
         ) : (
-          <p>Waiting for presenters...</p>
+          <p>All presenters have finished.</p>
         )}
       </main>
     );
@@ -119,30 +116,17 @@ const Room = () => {
 
   return (
     <main>
-      <h1>Room: {code}</h1>
+      <h1>Admin Room: {code}</h1>
+      {presenterCounter >= 2 && 
+        <button onClick={startRoom} style={{ padding: "10px 20px", marginBottom: "20px" }}>
+          Start Room
+        </button>
+      }
       <div>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter your name"
-          style={{ marginRight: "10px", padding: "5px" }}
-        />
-        <button onClick={() => setRole("spectator")} style={{ marginRight: "10px", padding: "5px 10px" }}>
-          Spectator
-        </button>
-        <button onClick={() => setRole("presenter")} style={{ padding: "5px 10px" }}>
-          Presenter
-        </button>
-        <button onClick={() => socket?.emit("updateUser", { room: code, username, role })} style={{ padding: "5px 10px" }}>
-          Pokračovat
-        </button>
-      </div>
-      <div style={{ marginTop: "20px" }}>
         <h2>Users in Room:</h2>
         <ul>
-          {users.map((user) => (
-            <li key={user.id}>
+          {users.map((user, index) => (
+            <li key={index}>
               {user.username} - {user.role}
             </li>
           ))}
@@ -152,4 +136,4 @@ const Room = () => {
   );
 };
 
-export default Room;
+export default RoomAdmin;
