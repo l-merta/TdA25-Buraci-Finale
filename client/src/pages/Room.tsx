@@ -15,6 +15,7 @@ const Room = () => {
   const [roomStarted, setRoomStarted] = useState(false); // Room started status
   const [currentPresenter, setCurrentPresenter] = useState<{ id: string; username: string } | null>(null); // Current presenter
   const [presenterReady, setPresenterReady] = useState(false); // Ready status of the current presenter
+  const [presentersDone, setPresentersDone] = useState(false); // All presenters are done
   const [error, setError] = useState<{ code: number; message: string } | null>(null); // Error state
 
   useEffect(() => {
@@ -50,6 +51,10 @@ const Room = () => {
       setPresenterReady(data.presenterReady);
     });
 
+    newSocket.on("allPresentersDone", () => {
+      setPresentersDone(true);
+    });
+
     // Listen for errors
     newSocket.on("error", (data: { code: number; message: string }) => {
       setError(data); // Set the error state
@@ -78,6 +83,14 @@ const Room = () => {
       <main>
         <h1>Zadej kód místnosti</h1>
         <RoomCode />
+      </main>
+    );
+  }
+
+  if (presentersDone) {
+    return (
+      <main>
+        <h1>Prezentace ukončeny</h1>
       </main>
     );
   }

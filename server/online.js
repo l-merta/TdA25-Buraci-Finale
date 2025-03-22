@@ -171,6 +171,11 @@ module.exports = (server) => {
             presenter: roomData.presenters[roomData.currentPresenterIndex],
             presenterReady: roomData.presenterReady,
           });
+
+          if (roomData.currentPresenterIndex == roomData.presenters.length - 1) {
+            // Notify all users of the next presenter
+            io.to(room).emit("lastPresenter", {});
+          }
         } else {
           // All presenters have presented
           io.to(room).emit("allPresentersDone", { message: "All presenters have finished." });

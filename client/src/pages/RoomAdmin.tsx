@@ -11,6 +11,8 @@ const RoomAdmin = () => {
   const [roomStarted, setRoomStarted] = useState(false); // Room started status
   const [currentPresenter, setCurrentPresenter] = useState<{ username: string } | null>(null); // Current presenter
   const [presenterReady, setPresenterReady] = useState(false); // Ready status of the current presenter
+  const [lastPresenter, setLastPresenter] = useState(false); // All presenters are done
+  const [presentersDone, setPresentersDone] = useState(false); // All presenters are done
   const [error, setError] = useState<{ code: number; message: string } | null>(null); // Error state
 
   useEffect(() => {
@@ -39,6 +41,14 @@ const RoomAdmin = () => {
     newSocket.on("currentPresenter", (data: { presenter: { username: string }; presenterReady: boolean }) => {
       setCurrentPresenter(data.presenter);
       setPresenterReady(data.presenterReady);
+    });
+
+    newSocket.on("lastPresenter", () => {
+      setLastPresenter(true);
+    });
+
+    newSocket.on("allPresentersDone", () => {
+      setPresentersDone(true);
     });
 
     // Listen for errors
@@ -75,6 +85,15 @@ const RoomAdmin = () => {
     return null; // No room code provided
   }
 
+  if (presentersDone) {
+    return (
+      <main>
+        <h1>Admin Room: {code}</h1>
+        <p>All presenters have finished.</p>
+      </main>
+    )
+  }
+
   if (roomStarted) {
     // If the room has started, display the current presenter and their ready status
     return (
@@ -85,7 +104,7 @@ const RoomAdmin = () => {
             <p>Currently presenting: {currentPresenter.username}</p>
             <p>Ready status: {presenterReady ? "Ready" : "Not Ready"}</p>
             <button onClick={nextPresenter} style={{ padding: "10px 20px" }}>
-              Next Presenter
+              {lastPresenter ? 'Ukázat výsledky' : 'Next Presenter'}
             </button>
           </div>
         ) : (
