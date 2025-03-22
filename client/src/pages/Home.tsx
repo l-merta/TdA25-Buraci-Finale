@@ -2,6 +2,7 @@
 
 import BackgroundEffect from './../components/BackgroundEffect';
 import RoomCode from './../sections/RoomCode';
+import Footer from './../components/Footer';
 
 const Home = () => {
   return (
@@ -10,6 +11,7 @@ const Home = () => {
       <BackgroundEffect />
       <img src="/images/TdA-logo-bile-full.png" className='logo-tda'/>
       <RoomCode />
+      <Footer />
     </main>
     </>
   );
