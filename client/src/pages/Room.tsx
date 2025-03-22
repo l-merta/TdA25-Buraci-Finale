@@ -3,12 +3,14 @@ import { useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 
 import RoomCode from "./../sections/RoomCode";
+import Error from "./Error"; // Import the Error component
 
 const Room = () => {
   const { code } = useParams<{ code?: string }>(); // Get :code from the URL
   const [socket, setSocket] = useState<Socket | null>(null);
   const [username, setUsername] = useState(""); // User's name
   const [users, setUsers] = useState<{ username: string }[]>([]); // List of users in the room
+  const [error, setError] = useState<{ code: number; message: string } | null>(null); // Error state
 
   useEffect(() => {
     if (!code) return; // If no room code, do nothing
@@ -27,6 +29,11 @@ const Room = () => {
       setUsers(data.users);
     });
 
+    // Listen for errors
+    newSocket.on("error", (data: { code: number; message: string }) => {
+      setError(data); // Set the error state
+    });
+
     // Cleanup on component unmount
     return () => {
       newSocket.disconnect();
@@ -39,6 +46,11 @@ const Room = () => {
       socket.emit("username", { room: code, username });
     }
   };
+
+  if (error) {
+    // If an error occurred, display the Error component
+    return <Error code={error.code} message={error.message} />;
+  }
 
   if (!code) {
     // If no code is present, display the RoomCode component

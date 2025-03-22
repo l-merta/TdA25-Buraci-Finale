@@ -50,7 +50,7 @@ module.exports = (server) => {
     // Handle joining a room
     socket.on("joinRoom", ({ room }) => {
       if (!rooms[room]) {
-        socket.emit("error", { message: "Room does not exist" });
+        socket.emit("error", { code: 404, message: "Room does not exist" });
         return;
       }
 
@@ -83,11 +83,6 @@ module.exports = (server) => {
 
           // Notify the room of the updated user list
           io.to(room).emit("roomUsers", { users: Object.values(rooms[room]) });
-
-          // If the room is empty, delete it
-          if (Object.keys(rooms[room]).length === 0) {
-            delete rooms[room];
-          }
 
           console.log(`User ${socket.id} disconnected from room ${room}`);
         }

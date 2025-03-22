@@ -1,13 +1,17 @@
-//import React from 'react'
+import React from "react";
 
-const Error = () => {
-  return (
-    <>
-    <main>
-      Stala se nějaká chyba kámo
-    </main>
-    </>
-  )
+interface ErrorProps {
+  code: number;
+  message: string;
 }
 
-export default Error
+const Error: React.FC<ErrorProps> = (props: ErrorProps) => {
+  return (
+    <main>
+      <h1>Error {props.code}</h1>
+      <p>{props.message}</p>
+    </main>
+  );
+};
+
+export default Error;
